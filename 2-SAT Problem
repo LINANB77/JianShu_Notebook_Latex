@@ -1,3 +1,7 @@
+%简书笔记参考：https://www.jianshu.com/p/e8d61caf7ecd
+%文章内容属于本人课程笔记，用于兴趣+启示
+%关键词：2-SAT，强连通图，图论算法，多项式算法
+
 \documentclass{article}
 
 \usepackage{ctex}
