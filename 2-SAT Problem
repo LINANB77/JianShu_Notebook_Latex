@@ -1,0 +1,67 @@
+\documentclass{article}
+
+\usepackage{ctex}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{datetime}
+
+\bibliographystyle{plain}
+\usepackage{lineno,hyperref,amsmath}% avoid occuring errors when creating matrix
+\usepackage[utf8]{inputenc}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{tabularx}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}{Lemma}[section]
+\newtheorem{problem}{Q}[]
+
+\title{一个 2-SAT Problem 的算法笔记}
+\date{}
+
+\begin{document}
+	\maketitle
+	
+	\section{定义}
+	\text{   } \\
+	A \textbf{literal} is a Boolean variable or its negation. \\
+	Some literals combined by the logical connection "or($\vee$)" bare called \textbf{clause}. \\
+	Given clauses $C_1, C_2, \dots,   C_k$, if $C_1 \wedge C_2 \wedge \dots C_k $can be true by assigning 1 or 0 to Boolean variables, then this \textbf{Boolean expression} $C_1  \wedge C_2  \wedge \dots C_k $is \textbf{satisfiable}. The corresponding assignment is called a \textbf{true assignment}. \\
+	\begin{problem}
+		Satisfiability Problem(SAT Problem) is described as follows: \\
+		Given clauses $C_1, C_2, ... ,  C_k$ involving Boolean variables $x_1, x_2, ..., x_l$, is $C_1 \wedge C_2 \wedge \dots C_k$ satisfiable?
+	\end{problem} 
+	\begin{problem}
+		2-SAT Problem is described as follows: \\
+		Given clauses $C_1, C_2, ... ,  C_k$ involving Boolean variables $x_1, x_2, ..., x_l$ and each $C_i$ contains exactly two literals, is $C_1 \wedge C_2 \wedge \dots C_k$ satisfiable?
+	\end{problem}
+
+	\text{   } \\
+	A directed graph is \textbf{strongly connected} if for any path from $v \rightarrow w$ in this graph, there is a path from $w \rightarrow v$. \\
+	A \textbf{strongly connected component} of a directed graph is a subgraph which is strongly connected. \\
+	\begin{problem}
+		Strongly Connected Components Problem is described as follows: \\
+		Given a directed graph and its two vertices $v, w$, are $v, w$ in the same strongly connected component?
+	\end{problem}
+	
+	\section{方法：转换与联系}
+	\text{   } \\
+	Strongly Connected Components Problem 可通过宽度优先搜索算法解决$O(n^2)$，$n$为图的顶点数，输入为图的邻接矩阵和两个给定顶点。 我们将2-SAT Problem转化为Strongly Connected Components Problem，考虑两者之间的转换和联系。 我们做如下转换（定义一个有向图即定义其顶点和顶点之间的弧，有向的边称为弧arc，无向的即是边edge）：
+	\begin{itemize}
+		\item[$\cdot$] 2-SAT中的一个布尔变量$x$，在布尔表达式中可以是 $x$ 和 $\neg x$ （两个literals，后者为$x$的非）；在图中，我们定义两个顶点，$x$与$\bar{x}$
+		\item[$\cdot$] 2-SAT中的一个clause，由两个literals通过逻辑词“或or($\vee$)”连接，不失一般性，令clause $C = x_1 \vee x_2$; 在图中定义两条弧，分别为 $\bar{x}_1 \rightarrow x_2$ 与 $\bar{x}_2 \rightarrow x_1$
+	\end{itemize}
+	现考虑“一个布尔表达式$B$（每个clause仅包含两个literals） 是否satisfiable” 与 “转化得到的图$G_B$，是否存在两个顶点在同一个强联通分量” 间的联系。有如下声明：
+	\begin{itemize}
+		\item[Claim 1:] $B$不是satisfiable当且仅当存在一个变量$x$，使得在转化图$G_B$中，可以找到从$x$到$\bar{x}$和$\bar{x}$到$x$的两条有向路径paths
+		\item[Claim 2:] $B$不是satisfiable当且仅当存在一个变量$x$，使得在转化图$G_B$中，$x$和$\bar{x}$在同一个强联通分量
+	\end{itemize}
+	现证明Claim 2。
+	\begin{proof}
+		必要性：假设$B$中存在一个变量$x$使得$x$和$\bar{x}$在同一个强联通分量，我们有一条从$x$到$\bar{x}$有向路径，一条从$\bar{x}$到$x$有向路径，分别定义为$x,x_1,x_2,\dots,x_k,\bar{x}$和$\bar{x},y_1,y_2,\dots,y_l,x$。根据对弧的定义规则，我们有clauses $\bar{x} \vee x_1, \bar{x}_1 \vee x_2, \dots, \bar{x}_k \vee \bar{x}$，以及 $x \vee y_1, \bar{y}_1 \vee y_2, \dots, \bar{y}_l \vee x$。若$x=1$，$(\bar{x} \vee x_1)\wedge (\bar{x}_1 \vee x_2)\wedge \dots \wedge (\bar{x}_k \vee \bar{x}) = 0$。若$x=0$，$(x \vee y_1)\wedge (\bar{y}_1 \vee y_2)\wedge \dots \wedge (\bar{y}_k \vee x) = 0$。因此, 我们无法使$B$取真, $B$为unsatisfiable。\\
+		充分性：考虑逆否命题，对$B$中每一个变量$x$，$x$和$\bar{x}$在不同的强联通分量，我们证明 $B$为satisfiable。对布尔表达式中的literal $z$，若在转化图中不存在从$z$到$\bar{z}$的路径，我们赋值$z=1$；若在转化图中不存在从$\bar{z}$到$z$的路径，我们赋值$z=0$。应用上述赋值规则对布尔表达式中的每一个literal赋值。若转化图中存在从$z$到$y$和$z$到$\bar{y}$的有向路径，则布尔表达式中有clause $\bar{z} \vee \bar{y}$，且有向图中存在一条$y$到$\bar{z}$的有向路径。因此我们得到一条$z$到$\bar{z}$的有向路径，与我们的假设矛盾。由于对$B$中每一个变量$x$，$x$和$\bar{x}$在不同的强联通分量，$B$中每一个clause都是satisfiable，因此$B$为satisfiable。
+		
+	\end{proof}
+	\section{总结}
+	将2-SAT Problem转化为Strongly Connected Components Problem，我们有如下过程。对2-SAT Problem中的一个实例instance，假设有$n$个布尔变量，我们定义$2n$个顶点；通过第二节中转化图的定义规则得到的有向图中的弧。对布尔表达式$B$中的每一个变量$x$，我们需要检查$x$和$\bar{x}$是否在同一个强联通分量。若不存在这样的$x$，$B$为satisfiable。最终我们得到一个求解2-SAT Problem的多项式时间算法。
+\end{document}
