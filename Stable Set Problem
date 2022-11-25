@@ -1,0 +1,51 @@
+\documentclass{article}
+
+\usepackage{ctex}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{datetime}
+
+\bibliographystyle{plain}
+\usepackage{lineno,hyperref,amsmath}% avoid occuring errors when creating matrix
+\usepackage[utf8]{inputenc}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{tabularx}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}{Lemma}[section]
+\newtheorem{problem}{Q}[]
+
+\title{Stable Set Problem 与 SAT Problem}
+\date{}
+
+\begin{document}
+	\maketitle
+	\section{定义}
+	\text{   } \\
+	图的一个stable set：为图的顶点集的一个子集，该子集中的任意两个顶点在图中都不相邻。\\
+	图的一个团（clique）：为图的一个子图，该子图中的任意两个顶点之间都存在边。
+	\begin{problem}
+		Stable Set Problem is described as follows: \\
+		Given a graph $G$ and an integer $k \ge 1$, dose $G$ contains a stable set of $k$ vertices?
+	\end{problem} 
+	\section{定理与转换}
+	\begin{theorem}
+		Stable Set Problem is NP-complete.
+	\end{theorem}
+	\begin{proof}
+		先证 Stable Set Problem 在NP中。假设给定一个Stable Set Problem的实例（instance），以及一个包含k个顶点的stable set。我们需要验证这个集合的确为stable，即该集合中任何两个顶点不相邻。上述验证过程的时间复杂度为$O(n^2)$，其中$n$为图的顶点数。同时，验证这个集合大小的时间复杂度为$O(n)$。因此，我们能在多项式时间内验证给定的set是否为基为$k$的stable set，意味着Stable Set Problem 在NP中。\\
+		已知SAT Problem为NP-complete，我们再证SAT Problem 能在多项式时间内转化为 Stable Set Problem。假设 $F = C_1 \wedge C_2 \wedge \dots C_m $ 为SAT Problem的一个实例，其中$C_i = \lambda_{i1} \vee \lambda_{i2} \vee \dots \vee \lambda_{i{t_i}}$，$i \in \{1,2,\dots, m\}$。我们按照如下规则构造无向图$G_F:$
+		\begin{itemize}
+			\item[a.] 顶点集 $V(G_F) = \{ v_{ij}: 1\le i \le m, 1 \le j \le t_i \}$
+			\item[b.] 边集 $E(G_F)$中的任一边$v_{ij}v_{kl}$，要么 $i=k$ 且 $j \ne l $，要么$\lambda_{ij}=x$ 且 $ \lambda_{kl}=\bar{x}$ 对某个变量$x$，其中$\bar{x}$为$x$的非。
+		\end{itemize}
+		实际上，上述规则将$F$中的一个clause $C_i$转为为图$G_F$中的一个包含$t_i$个顶点的团（clique）。对边的构造，“$i=k$ 且 $j \ne l $” 对应团内部的边，“$\lambda_{ij}=x$ 且 $ \lambda_{kl}=\bar{x}$” 对应团与团之间的边。\\
+		现考虑SAT Problem与Stable Set Problem的联系。假设$G_F$有一个大小为$m$的stable set，依据$G_F$的构造规则，我们有在$F$中有$m$个literals，即stable set中的$v_{ij}$对应$F$中的$\lambda_{ij}$。将这些literals赋真，其他赋假，我们得到$F$的一个true assignment，即$F$为satisfiable。反之，$G_F$中的一个团对应$F$中的一个clause $C_i$，若$F$为satisfiable，$G_F$中有这样一个stable set：每个团中最多有一个顶点在stable set中，若团中的顶点与其他团之间存在边，意味着$F$中的两个clauses以 $(\dots \vee x)\wedge(\bar{x} \vee \dots)$的形式出现，即我们取$x=1$，后者clause中$\bar{x}=0$，从而我们选择其他点。\\
+		最终，当问一个SAT Problem的实例$F$是否satisfiable时，我们转化为构造的图$G_F$中是否有一个大小为$k$的stable set。而当问图中是否包含一个大小为$k$的stable set时，我们转化为该图是否可以划分为$k$个团。\\
+		由于$k$是一个给定的值，当$k$固定时，我们有一个多项式算法来检验一个图是否有一个大小为$k$的stable set，即穷举大小为$k$的顶点子集（组合数$\binom{n}{k}$），即我们可以在$O(n^k)$时间内完成转化。
+	\end{proof}
+	
+	
+	
+\end{document}
